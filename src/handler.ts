@@ -6,6 +6,7 @@ export async function handleRequest(
 ): Promise<Response> {
   const { searchParams } = new URL(request.url)
   const compressedURL = searchParams.get('decompress')
+  const purge = searchParams.get('purge') === 'true'
 
   if (request.method !== 'GET' || compressedURL == null) {
     return new Response('Unsupported', { status: 500 })
@@ -13,6 +14,11 @@ export async function handleRequest(
 
   const cacheKey = new Request(compressedURL.toString(), request)
   const cache = caches.default
+
+  if (purge) {
+    event.waitUntil(cache.delete(cacheKey))
+    return new Response(null, { status: 204 })
+  }
 
   let response = await cache.match(cacheKey)
 
@@ -42,7 +48,7 @@ export async function handleRequest(
       status: 200,
     })
 
-    response.headers.append('Cache-Control', 'max-age=21600')
+    response.headers.append('Cache-Control', 'max-age=2160000')
 
     event.waitUntil(cache.put(cacheKey, response.clone()))
   }
