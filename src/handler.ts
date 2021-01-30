@@ -33,17 +33,15 @@ export async function handleRequest(
     }
 
     const unzipped = unzipSync(new Uint8Array(zipFile))
-    const debFile = Object.keys(unzipped).filter((filename) =>
-      filename.endsWith('.deb'),
-    )[0]
+    const file = Object.keys(unzipped)[0]
 
-    if (debFile == null) {
+    if (file == null) {
       return new Response(null, { status: 500 })
     }
 
-    response = new Response(unzipped[debFile], {
+    response = new Response(unzipped[file], {
       headers: {
-        'Content-Disposition': `attachment; filename="${debFile}"`,
+        'Content-Disposition': `attachment; filename="${file}"`,
       },
       status: 200,
     })
